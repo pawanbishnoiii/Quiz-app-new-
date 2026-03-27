@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and progress data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "examPrep": { "type": "string" },
+        "language": { "type": "string", "enum": ["Hindi", "English"] },
+        "xp": { "type": "integer" },
+        "streak": { "type": "integer" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "bookmarks": { "type": "array", "items": { "type": "string" } },
+        "purchasedCourses": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Educational course details",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["Beginner", "Intermediate", "Advanced"] },
+        "isFree": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "studentsCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "price", "category", "difficulty"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Subject within a course",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "integer" }
+      },
+      "required": ["courseId", "title"]
+    },
+    "Topic": {
+      "title": "Topic",
+      "description": "Topic within a subject",
+      "type": "object",
+      "properties": {
+        "subjectId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "integer" },
+        "pdfUrl": { "type": "string" }
+      },
+      "required": ["subjectId", "title"]
+    },
+    "Test": {
+      "title": "Test",
+      "description": "MCQ or Subjective test",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "courseId": { "type": "string" },
+        "topicId": { "type": "string" },
+        "type": { "type": "string", "enum": ["Full", "Topic", "Subjective"] },
+        "duration": { "type": "integer" },
+        "negativeMarking": { "type": "number" },
+        "cutoff": { "type": "number" },
+        "questionsCount": { "type": "integer" },
+        "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] }
+      },
+      "required": ["title", "courseId", "type"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Individual MCQ question",
+      "type": "object",
+      "properties": {
+        "testId": { "type": "string" },
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "integer" },
+        "explanation": { "type": "string" },
+        "likes": { "type": "integer" },
+        "dislikes": { "type": "integer" }
+      },
+      "required": ["testId", "text", "options", "correctAnswer"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/testSeries/{testSeriesId}": { "schema": "Course", "description": "Available test series" },
+    "/subjects/{subjectId}": { "schema": "Subject", "description": "Subjects" },
+    "/topics/{topicId}": { "schema": "Topic", "description": "Topics" },
+    "/tests/{testId}": { "schema": "Test", "description": "Tests" },
+    "/questions/{questionId}": { "schema": "Question", "description": "Questions" },
+    "/results/{resultId}": { "schema": "Result", "description": "Test results" },
+    "/purchases/{purchaseId}": { "schema": "Purchase", "description": "Course purchases" },
+    "/banners/{bannerId}": { "schema": "Banner", "description": "Home page banners" },
+    "/notifications/{notificationId}": { "schema": "Notification", "description": "Notifications" }
+  }
+}

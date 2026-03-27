@@ -2,8 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, signOut } from "../firebase";
 import { useAppStore } from "../store";
-import { LogOut, User as UserIcon, Bell, Search, Menu } from "lucide-react";
-import { motion } from "framer-motion";
+import { LogOut, User as UserIcon, Bell, Search } from "lucide-react";
 
 export default function Navbar() {
   const { user } = useAppStore();
@@ -16,22 +15,22 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="text-2xl font-black tracking-tighter text-orange-500 uppercase italic">
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between gap-2 px-3 sm:h-16 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+          <Link to="/" className="shrink-0 text-lg font-black uppercase italic tracking-tighter text-orange-500 sm:text-2xl">
             Bnoy
           </Link>
-          <div className="hidden md:flex relative">
+          <div className="relative hidden md:flex">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
             <input 
               type="text" 
               placeholder="Search test series..." 
-              className="h-9 w-64 rounded-full bg-zinc-900 pl-10 pr-4 text-sm border border-zinc-800 focus:outline-none focus:border-orange-500 transition-colors"
+              className="h-9 w-64 max-w-full rounded-full border border-zinc-800 bg-zinc-900 pl-10 pr-4 text-sm transition-colors focus:border-orange-500 focus:outline-none"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           {user ? (
             <>
               <button className="relative p-2 text-zinc-400 hover:text-white transition-colors">
@@ -59,11 +58,11 @@ export default function Navbar() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-4">
-              <Link to="/auth" className="text-sm font-medium hover:text-orange-500 transition-colors">Login</Link>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link to="/auth" className="hidden text-sm font-medium transition-colors hover:text-orange-500 min-[360px]:block">Login</Link>
               <Link 
                 to="/auth" 
-                className="rounded-full bg-orange-500 px-5 py-2 text-sm font-bold text-white hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20"
+                className="rounded-full bg-orange-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition-all duration-300 ease-out hover:bg-orange-600 sm:px-5 sm:py-2 sm:text-sm"
               >
                 Join Now
               </Link>

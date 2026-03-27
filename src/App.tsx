@@ -55,7 +55,7 @@ export default function App() {
 
   if (!isAuthReady) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-zinc-950 text-white">
+      <div className="flex h-screen w-full max-w-full items-center justify-center overflow-x-hidden bg-zinc-950 text-white">
         <div className="animate-pulse text-2xl font-bold tracking-tighter uppercase italic">Bnoy</div>
       </div>
     );
@@ -63,11 +63,11 @@ export default function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-orange-500 selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-zinc-950 font-sans text-zinc-100 selection:bg-orange-500 selection:text-white">
         <Navbar />
-        <div className="flex">
+        <div className="flex w-full max-w-full">
           {user && <Sidebar />}
-          <main className={`flex-1 ${user ? 'md:ml-64' : ''} p-4 md:p-8`}>
+          <main className={`min-w-0 max-w-full flex-1 ${user ? 'md:ml-64' : ''} p-3 sm:p-4 md:p-8`}>
             <Routes>
               <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Landing />} />
               <Route path="/auth" element={<Auth />} />

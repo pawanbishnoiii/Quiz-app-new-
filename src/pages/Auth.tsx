@@ -1,6 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { auth, db, googleProvider, signInWithPopup, doc, setDoc, getDoc } from "../firebase";
+import {
+  auth,
+  db,
+  googleProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  doc,
+  setDoc,
+  getDoc,
+} from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../store";
 import { User } from "../types";
@@ -18,21 +28,56 @@ export default function Auth() {
   const { setUser } = useAppStore();
   const navigate = useNavigate();
 
+  const handleAuthResult = async (firebaseUser: any) => {
+    const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+
+    if (userDoc.exists()) {
+      setUser(userDoc.data() as User);
+      navigate("/dashboard");
+      return;
+    }
+
+    setTempUser(firebaseUser);
+    setFormData((prev) => ({ ...prev, name: firebaseUser.displayName || "" }));
+    setStep(1);
+  };
+
+  useEffect(() => {
+    const checkRedirectResult = async () => {
+      try {
+        const redirectResult = await getRedirectResult(auth);
+        if (redirectResult?.user) {
+          await handleAuthResult(redirectResult.user);
+        }
+      } catch (error) {
+        console.error("Redirect login error:", error);
+      }
+    };
+
+    checkRedirectResult();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleGoogleLogin = async () => {
     setLoading(true);
+    googleProvider.setCustomParameters({ prompt: "select_account" });
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const userDoc = await getDoc(doc(db, "users", result.user.uid));
-      
-      if (userDoc.exists()) {
-        setUser(userDoc.data() as User);
-        navigate("/dashboard");
-      } else {
-        setTempUser(result.user);
-        setFormData(prev => ({ ...prev, name: result.user.displayName || "" }));
-        setStep(1);
+      await handleAuthResult(result.user);
+    } catch (error: any) {
+      const popupBlockedCodes = [
+        "auth/popup-blocked",
+        "auth/popup-closed-by-user",
+        "auth/operation-not-supported-in-this-environment",
+      ];
+
+      if (popupBlockedCodes.includes(error?.code)) {
+        console.warn("Popup login unavailable, switching to redirect login.", error?.code);
+        await signInWithRedirect(auth, googleProvider);
+        return;
       }
-    } catch (error) {
+
       console.error("Login error:", error);
     } finally {
       setLoading(false);
@@ -73,7 +118,7 @@ export default function Auth() {
       <div className="w-full max-w-md overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900 shadow-2xl">
         <AnimatePresence mode="wait">
           {step === 0 && (
-            <motion.div 
+            <motion.div
               key="login"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -82,9 +127,9 @@ export default function Auth() {
             >
               <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">Welcome to Bnoy</h2>
               <p className="mt-2 text-zinc-500">Sign in to start your preparation journey.</p>
-              
+
               <div className="mt-10 space-y-4">
-                <button 
+                <button
                   onClick={handleGoogleLogin}
                   disabled={loading}
                   className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-lg font-bold text-black hover:bg-zinc-200 transition-all disabled:opacity-50"
@@ -92,7 +137,7 @@ export default function Auth() {
                   <Chrome className="h-6 w-6" />
                   Continue with Google
                 </button>
-                <button 
+                <button
                   disabled
                   className="flex w-full items-center justify-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/50 px-6 py-4 text-lg font-bold text-zinc-500 transition-all"
                 >
@@ -107,7 +152,7 @@ export default function Auth() {
           )}
 
           {step === 1 && (
-            <motion.div 
+            <motion.div
               key="step1"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -120,29 +165,33 @@ export default function Auth() {
               </div>
               <h2 className="text-2xl font-bold text-white">Tell us about yourself</h2>
               <p className="mt-1 text-zinc-500">Help us personalize your experience.</p>
-              
+
               <div className="mt-8 space-y-6">
                 <div>
                   <label className="text-sm font-medium text-zinc-400">Full Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-zinc-400">Target Exam</label>
-                  <select 
+                  <select
                     value={formData.examPrep}
-                    onChange={(e) => setFormData({...formData, examPrep: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, examPrep: e.target.value })}
                     className="mt-2 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-white focus:border-orange-500 focus:outline-none"
                   >
                     <option value="">Select Exam</option>
-                    {exams.map(exam => <option key={exam} value={exam}>{exam}</option>)}
+                    {exams.map((exam) => (
+                      <option key={exam} value={exam}>
+                        {exam}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <button 
+                <button
                   onClick={() => setStep(2)}
                   disabled={!formData.name || !formData.examPrep}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-50 py-4 text-lg font-bold text-orange-500 hover:bg-orange-100 transition-all disabled:opacity-50"
@@ -154,7 +203,7 @@ export default function Auth() {
           )}
 
           {step === 2 && (
-            <motion.div 
+            <motion.div
               key="step2"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -165,23 +214,20 @@ export default function Auth() {
                 <div className="h-2 w-12 rounded-full bg-orange-500"></div>
                 <div className="h-2 w-12 rounded-full bg-orange-500"></div>
               </div>
-              <button 
-                onClick={() => setStep(1)}
-                className="flex items-center gap-1 text-sm text-zinc-500 hover:text-white mb-4"
-              >
+              <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-zinc-500 hover:text-white mb-4">
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
               <h2 className="text-2xl font-bold text-white">Preferred Language</h2>
               <p className="mt-1 text-zinc-500">You can change this later in settings.</p>
-              
+
               <div className="mt-8 space-y-4">
                 {["English", "Hindi"].map((lang) => (
-                  <button 
+                  <button
                     key={lang}
-                    onClick={() => setFormData({...formData, language: lang as any})}
+                    onClick={() => setFormData({ ...formData, language: lang as any })}
                     className={`flex w-full items-center justify-between rounded-2xl border p-5 transition-all ${
-                      formData.language === lang 
-                        ? "border-orange-500 bg-orange-500/5 text-white" 
+                      formData.language === lang
+                        ? "border-orange-500 bg-orange-500/5 text-white"
                         : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700"
                     }`}
                   >
@@ -189,8 +235,8 @@ export default function Auth() {
                     {formData.language === lang && <CheckCircle2 className="h-6 w-6 text-orange-500" />}
                   </button>
                 ))}
-                
-                <button 
+
+                <button
                   onClick={handleCompleteOnboarding}
                   disabled={loading}
                   className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-4 text-lg font-bold text-white hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/20 disabled:opacity-50"

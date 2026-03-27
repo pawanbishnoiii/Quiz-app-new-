@@ -75,7 +75,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="space-y-16 pb-20">
+    <div className="w-full max-w-full space-y-12 overflow-x-hidden pb-20 sm:space-y-16">
       {/* Hero Section */}
       <section className="relative overflow-hidden rounded-3xl border border-orange-500/20 bg-[linear-gradient(130deg,#07070a_0%,#111827_50%,#1f2937_100%)] p-4 sm:p-6 md:p-8">
         <div className="pointer-events-none absolute -left-20 -top-20 h-52 w-52 rounded-full bg-orange-500/25 blur-3xl" />
@@ -335,7 +335,7 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="grid grid-cols-2 gap-8 rounded-3xl bg-orange-500 p-12 md:grid-cols-4">
+      <section className="grid grid-cols-2 gap-5 rounded-3xl bg-orange-500 p-5 sm:p-8 md:grid-cols-4 md:gap-8 md:p-12">
         {[
           { label: "Active Users", val: "50k+" },
           { label: "Test Series", val: "200+" },
